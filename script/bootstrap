@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+cd "$(dirname "$0")/.."
+
+apt-get update --quiet
+apt-get install --quiet --yes kpartx qemu-user-static
