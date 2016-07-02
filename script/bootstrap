@@ -5,4 +5,10 @@ IFS=$'\n\t'
 cd "$(dirname "$0")/.."
 
 apt-get update --quiet
-apt-get install --quiet --yes kpartx qemu-user-static
+apt-get install --quiet --yes kpartx qemu-user-static curl git
+
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+apt-get install --quiet --yes nodejs
+
+git clone https://github.com/pincio/jenny.git /opt/jenny
+sh -c "cd /opt/jenny && npm install"
