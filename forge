@@ -1,0 +1,102 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+cd "$(dirname "$0")/.."
+
+usage() {
+  echo "Usage:"
+  echo "  forge <image_path>"
+  echo
+  echo "Parameters:"
+  echo "  image_path  The path to the Raspbian image"
+
+  exit 1
+}
+
+image_path=${1:-}
+
+if [ "x${image_path}" = "x" ]; then
+  usage
+fi
+
+# Is the path to the Raspbian image relative to the working directory?
+if [[ ! ${image_path:0:1} = "/" ]]; then
+  image_path="${PWD}/${image_path}"
+fi
+
+echo "${image_path}"
+
+if [ ! -f "${image_path}" ]; then
+  usage
+fi
+
+tmp=$(kpartx -asv "${image_path}")
+
+# `kpartx -asv` will output one line per mapped device to stdout in the following form:
+#
+# ```
+# add map $device_name ...
+# ```
+#
+# The Raspbian image contains two partitions, the system and boot partitions. Since forge only
+# modifies the content of the system partition, extract the name of the device mapped to the
+# second - system - partition.
+device_name=$(echo "${tmp}" | tail -n 1 | cut -d " " -f 3)
+device_path="/dev/mapper/${device_name}"
+
+mkdir /mnt/rpi
+
+mount "${device_path}" /mnt/rpi
+mount -o bind /dev /mnt/rpi/dev
+mount -o bind /proc /mnt/rpi/proc
+mount -o bind /sys /mnt/rpi/sys
+
+cp /usr/bin/qemu-arm-static /mnt/rpi/usr/bin/
+
+# Havard Blok notes that, in order to avoid triggering
+#
+# ```
+# qemu: uncaught target signal 4 (Illegal instruction) – core dumped"
+# ```
+#
+# errors while running commands on the target, all lines in /mnt/rpi/etc/ld.so.preload must be
+# disabled.
+mv /mnt/rpi/etc/ld.so.preload /mnt/rpi/etc/ld.so.preload.bak
+
+chroot /mnt/rpi apt-get update --quiet
+
+chroot /mnt/rpi apt-get install --quiet --yes hostapd
+chroot /mnt/rpi update-rc.d hostapd enable
+
+chroot /mnt/rpi apt-get install --quiet --yes isc-dhcp-server
+chroot /mnt/rpi update-rc.d isc-dhcp-server enable
+
+# Henceforth, no commands will be run on the target.
+mv /mnt/rpi/etc/ld.so.preload.bak /mnt/rpi/etc/ld.so.preload
+
+/opt/jenny/bin/jenny interfaces > /mnt/rpi/etc/network/interfaces
+/opt/jenny/bin/jenny hostapd > /mnt/rpi/etc/hostapd/hostapd.conf
+/opt/jenny/bin/jenny dhcpd > /mnt/rpi/etc/dhcp/dhcpd.conf
+
+# Although /etc/dhcp/dhcpd.conf is the default value of the DHCPD_CONF configuration variable,
+# explicit configuration is favourable to implicit configuration.
+sed -i -e "s/^#DHCPD_CONF=.*$/DHCPD_CONF=\"\/etc\/dhcp\/dhcpd.conf\"/" /mnt/rpi/etc/default/isc-dhcp-server
+
+dhcpd_devices=$(/opt/jenny/bin/jenny dhcpd_devices)
+sed -i -e "s/^INTERFACES=\"\"$/INTERFACES=\"${dhcpd_devices}\"/" /mnt/rpi/etc/default/isc-dhcp-server
+
+echo "net.ipv4.ip_forward=1" >> /mnt/rpi/etc/sysctl.conf
+
+/opt/jenny/bin/jenny iptables > /mnt/rpi/etc/rc.local
+/opt/jenny/bin/jenny tc >> /mnt/rpi/etc/rc.local
+echo "exit 0" >> /mnt/rpi/etc/rc.local
+
+umount /mnt/rpi/dev
+umount /mnt/rpi/proc
+umount /mnt/rpi/sys
+umount /mnt/rpi
+
+rm -r /mnt/rpi
+
+kpartx -d "${image_path}"
