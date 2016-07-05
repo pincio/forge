@@ -77,6 +77,8 @@ mv /mnt/rpi/etc/ld.so.preload.bak /mnt/rpi/etc/ld.so.preload
 /opt/jenny/bin/jenny hostapd > /mnt/rpi/etc/hostapd/hostapd.conf
 /opt/jenny/bin/jenny dhcpd > /mnt/rpi/etc/dhcp/dhcpd.conf
 
+sed -i -e "s/^#DAEMON_CONF=.*$/DAEMON_CONF=\"\/etc\/hostapd\/hostapd.conf\"/" /mnt/rpi/etc/default/hostapd
+
 # Although /etc/dhcp/dhcpd.conf is the default value of the DHCPD_CONF configuration variable,
 # explicit configuration is favourable to implicit configuration.
 sed -i -e "s/^#DHCPD_CONF=.*$/DHCPD_CONF=\"\/etc\/dhcp\/dhcpd.conf\"/" /mnt/rpi/etc/default/isc-dhcp-server
