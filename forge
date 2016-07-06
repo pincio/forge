@@ -4,6 +4,13 @@ IFS=$'\n\t'
 
 cd "$(dirname "$0")/.."
 
+# This script is based on [Havard Blok's "chroot to ARM" blog post][0] and [Lady Ada's "Setting up
+# a Raspberry Pi as a WiFi access point" tutorial][1]. If those resources weren't publicly
+# available, then this script could never have been written.
+#
+# [0]: https://hblok.net/blog/posts/2014/02/06/chroot-to-arm/
+# [1]: https://learn.adafruit.com/setting-up-a-raspberry-pi-as-a-wifi-access-point
+
 usage() {
   echo "Usage:"
   echo "  forge <image_path>"
