@@ -36,6 +36,7 @@ if [ ! -f "${image_path}" ]; then
   usage
 fi
 
+echo "==> Mounting image..."
 tmp=$(kpartx -asv "${image_path}")
 
 # `kpartx -asv` will output one line per mapped device to stdout in the following form:
@@ -69,22 +70,27 @@ cp /usr/bin/qemu-arm-static /mnt/rpi/usr/bin/
 # disabled.
 mv /mnt/rpi/etc/ld.so.preload /mnt/rpi/etc/ld.so.preload.bak
 
-chroot /mnt/rpi apt-get update --quiet
+echo "==> Installing hostapd and isc-dhcp-server packages..."
+chroot /mnt/rpi apt-get update >/dev/null
+chroot /mnt/rpi apt-get install --yes hostapd isc-dhcp-server >/dev/null
 
-chroot /mnt/rpi apt-get install --quiet --yes hostapd
+echo "===> Installing hostapd and isc-dhcp-server init scripts..."
 chroot /mnt/rpi update-rc.d hostapd enable
-
-chroot /mnt/rpi apt-get install --quiet --yes isc-dhcp-server
 chroot /mnt/rpi update-rc.d isc-dhcp-server enable
 
 # Henceforth, no commands will be run on the target.
 mv /mnt/rpi/etc/ld.so.preload.bak /mnt/rpi/etc/ld.so.preload
 
+echo "==> Configuring..."
+echo "===> Configuring network interfaces..."
 /opt/jenny/bin/jenny interfaces > /mnt/rpi/etc/network/interfaces
-/opt/jenny/bin/jenny hostapd > /mnt/rpi/etc/hostapd/hostapd.conf
-/opt/jenny/bin/jenny dhcpd > /mnt/rpi/etc/dhcp/dhcpd.conf
 
+echo "===> Configuring access point daemon..."
+/opt/jenny/bin/jenny hostapd > /mnt/rpi/etc/hostapd/hostapd.conf
 sed -i -e "s/^#DAEMON_CONF=.*$/DAEMON_CONF=\"\/etc\/hostapd\/hostapd.conf\"/" /mnt/rpi/etc/default/hostapd
+
+echo "===> Configuring DHCP daemon..."
+/opt/jenny/bin/jenny dhcpd > /mnt/rpi/etc/dhcp/dhcpd.conf
 
 # Although /etc/dhcp/dhcpd.conf is the default value of the DHCPD_CONF configuration variable,
 # explicit configuration is favourable to implicit configuration.
@@ -93,12 +99,16 @@ sed -i -e "s/^#DHCPD_CONF=.*$/DHCPD_CONF=\"\/etc\/dhcp\/dhcpd.conf\"/" /mnt/rpi/
 dhcpd_devices=$(/opt/jenny/bin/jenny dhcpd_devices)
 sed -i -e "s/^INTERFACES=\"\"$/INTERFACES=\"${dhcpd_devices}\"/" /mnt/rpi/etc/default/isc-dhcp-server
 
+echo "===> Configuring NAT..."
 echo "net.ipv4.ip_forward=1" >> /mnt/rpi/etc/sysctl.conf
-
 /opt/jenny/bin/jenny iptables > /mnt/rpi/etc/rc.local
+
+echo "===> Configuring traffic control..."
 /opt/jenny/bin/jenny tc >> /mnt/rpi/etc/rc.local
+
 echo "exit 0" >> /mnt/rpi/etc/rc.local
 
+echo "==> Unmounting image..."
 umount /mnt/rpi/dev
 umount /mnt/rpi/proc
 umount /mnt/rpi/sys
@@ -106,4 +116,4 @@ umount /mnt/rpi
 
 rm -r /mnt/rpi
 
-kpartx -d "${image_path}"
+kpartx -d "${image_path}" >/dev/null
