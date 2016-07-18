@@ -99,13 +99,32 @@ sed -i -e "s/^#DHCPD_CONF=.*$/DHCPD_CONF=\"\/etc\/dhcp\/dhcpd.conf\"/" /mnt/rpi/
 dhcpd_devices=$(/opt/jenny/bin/jenny dhcpd_devices)
 sed -i -e "s/^INTERFACES=\"\"$/INTERFACES=\"${dhcpd_devices}\"/" /mnt/rpi/etc/default/isc-dhcp-server
 
-echo "===> Configuring NAT..."
+echo "===> Configuring NAT and packet marking..."
 echo "net.ipv4.ip_forward=1" >> /mnt/rpi/etc/sysctl.conf
-/opt/jenny/bin/jenny iptables > /mnt/rpi/etc/rc.local
+
+# Generated the iptables rules by adding them on the host and then dumping them into a file on the
+# target.
+/opt/jenny/bin/jenny iptables | /bin/bash
+sudo sh -c "iptables-save > /mnt/rpi/etc/iptables.ipv4.nat"
+
+# Flush all of the host's iptables rules.
+#
+# Unfortunately, the blog post that Aravinda cites in their Server Fault answer [3] no longer
+# exists. However, the answer still works.
+#
+# [3]: http://serverfault.com/a/633623
+iptables -F
+iptables -X
+iptables -t nat -F
+iptables -t nat -X
+iptables -t mangle -F
+iptables -t mangle -X
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
 
 echo "===> Configuring traffic control..."
-/opt/jenny/bin/jenny tc >> /mnt/rpi/etc/rc.local
-
+/opt/jenny/bin/jenny tc > /mnt/rpi/etc/rc.local
 echo "exit 0" >> /mnt/rpi/etc/rc.local
 
 echo "==> Unmounting image..."
