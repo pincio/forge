@@ -60,6 +60,16 @@ mount -o bind /sys /mnt/rpi/sys
 
 cp /usr/bin/qemu-arm-static /mnt/rpi/usr/bin/
 
+# In Ubuntu Docker images - at least - /proc/sys/fs/binfmt_misc is empty and, consequently, the
+# ARM executable format can't be enabled.
+#
+# The following command is run during the installation of the binfmt-support package but fails
+# while building the Docker image as all mount operations are denied [3].
+#
+# [3] https://docs.docker.com/engine/security/security/#/linux-kernel-capabilities
+mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc
+update-binfmts --enable qemu-arm >/dev/null
+
 # Havard Blok notes that, in order to avoid triggering
 #
 # ```
@@ -109,10 +119,10 @@ iptables-save > /mnt/rpi/etc/iptables.ipv4.nat
 
 # Flush all of the host's iptables rules.
 #
-# Unfortunately, the blog post that Aravinda cites in their Server Fault answer [3] no longer
+# Unfortunately, the blog post that Aravinda cites in their Server Fault answer [4] no longer
 # exists. However, the answer still works.
 #
-# [3]: http://serverfault.com/a/633623
+# [4]: http://serverfault.com/a/633623
 iptables -F
 iptables -X
 iptables -t nat -F
