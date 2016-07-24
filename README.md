@@ -10,15 +10,10 @@ round-trip time (RTT) and bandwidth.
 
 ## Getting Started
 
-You can install and setup Forge, and build a Raspbian image by executing the following commands:
+You can build a Raspbian image by executing the following commands:
 
-    git clone https://github.com/pincio/forge.git
-    cd forge
     cp /path/to/raspbian_lite_latest.img .
-    vagrant up
-    vagrant ssh
-    cd /vagrant
-    sudo ./forge /vagrant/raspbian_lite_latest.img
+    docker run --privileged -v $PWD:/tmp pinc/forge /tmp/raspbian_lite_latest.img
 
 ## Feedback
 
