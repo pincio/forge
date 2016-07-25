@@ -13,7 +13,7 @@ round-trip time (RTT) and bandwidth.
 You can build a Raspbian image by executing the following commands:
 
     cp /path/to/raspbian_lite_latest.img .
-    docker run --privileged -v $PWD:/tmp pinc/forge /tmp/raspbian_lite_latest.img
+    docker run --rm --privileged -v $PWD:/tmp pinc/forge /tmp/raspbian_lite_latest.img
 
 ## Feedback
 
