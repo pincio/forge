@@ -2,11 +2,10 @@
 
 ## What?
 
-Given [a Raspbian image](https://www.raspberrypi.org/downloads/raspbian/) and a set of network
-profiles, Forge will build a Raspbian image that'll make a Raspberry Pi operate as a wireless
-access point. For each network profile, the Raspberry Pi will create a wireless access point (WAP)
-and corresponding [tc(8)](http://linux.die.net/man/8/tc) queuing disciplines and filters to manage
-round-trip time (RTT) and bandwidth.
+Given [a Raspbian image](https://www.raspberrypi.org/downloads/raspbian/) and a set of *network
+profiles*, Forge will build a Raspbian image that'll create a wireless access point (WAP) and
+conditioned network for each profile. By default, your Raspberry Pi will create a WAP for
+[the average 4G and 3G mobile network connections in the UK][0].
 
 ## Why?
 
@@ -35,3 +34,5 @@ you can:
 ## License
 
 Forge is [MIT-licensed](./LICENSE).
+
+[0]: https://github.com/pincio/jenny/blob/dev/profiles.yaml
