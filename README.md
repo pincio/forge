@@ -8,6 +8,14 @@ access point. For each network profile, the Raspberry Pi will create a wireless 
 and corresponding [tc(8)](http://linux.die.net/man/8/tc) queuing disciplines and filters to manage
 round-trip time (RTT) and bandwidth.
 
+## Why?
+
+From the perspective of the user,
+[phuedx/micro-device-lab](https://github.com/phuedx/micro-device-lab) needs radical simplification.
+µDL is unnecessarily complex, both to get running and in terms of UX: requiring the user to visit a
+known address and interact with a custom UI ~~can~~ **must** be replaced by, the much more familiar,
+download a pre-built Raspbian image and write it to an SD card.
+
 ## Getting Started
 
 You can build a Raspbian image by executing the following commands:
