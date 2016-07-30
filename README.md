@@ -2,9 +2,9 @@
 
 ## What?
 
-Given [a Raspbian image](https://www.raspberrypi.org/downloads/raspbian/) and a set of *network
-profiles*, Forge will build a Raspbian image that'll create a wireless access point (WAP) and
-conditioned network for each profile. By default, your Raspberry Pi will create a WAP for
+Forge builds PiNC images. Given a set of network throttling profiles, Forge will configure
+[a Raspbian image](https://www.raspberrypi.org/downloads/raspbian/) so that it'll operate as a
+wireless router, with a WLAN per profile. The default profiles are
 [the average 4G and 3G mobile network connections in the UK][0].
 
 ## Why?
