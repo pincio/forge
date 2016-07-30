@@ -2,6 +2,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+JENNY_BIN="/opt/jenny/bin/jenny"
+
 cd "$(dirname "$0")/.."
 
 # This script is based on [Havard Blok's "chroot to ARM" blog post][0] and [Lady Ada's "Setting up
@@ -93,20 +95,20 @@ mv /mnt/rpi/etc/ld.so.preload.bak /mnt/rpi/etc/ld.so.preload
 
 echo "==> Configuring..."
 echo "===> Configuring network interfaces..."
-/opt/jenny/bin/jenny interfaces > /mnt/rpi/etc/network/interfaces
+$JENNY_BIN interfaces > /mnt/rpi/etc/network/interfaces
 
 echo "===> Configuring access point daemon..."
-/opt/jenny/bin/jenny hostapd > /mnt/rpi/etc/hostapd/hostapd.conf
+$JENNY_BIN hostapd > /mnt/rpi/etc/hostapd/hostapd.conf
 sed -i -e "s/^#DAEMON_CONF=.*$/DAEMON_CONF=\"\/etc\/hostapd\/hostapd.conf\"/" /mnt/rpi/etc/default/hostapd
 
 echo "===> Configuring DHCP daemon..."
-/opt/jenny/bin/jenny dhcpd > /mnt/rpi/etc/dhcp/dhcpd.conf
+$JENNY_BIN dhcpd > /mnt/rpi/etc/dhcp/dhcpd.conf
 
 # Although /etc/dhcp/dhcpd.conf is the default value of the DHCPD_CONF configuration variable,
 # explicit configuration is favourable to implicit configuration.
 sed -i -e "s/^#DHCPD_CONF=.*$/DHCPD_CONF=\"\/etc\/dhcp\/dhcpd.conf\"/" /mnt/rpi/etc/default/isc-dhcp-server
 
-dhcpd_devices=$(/opt/jenny/bin/jenny dhcpd_devices)
+dhcpd_devices=$($JENNY_BIN dhcpd_devices)
 sed -i -e "s/^INTERFACES=\"\"$/INTERFACES=\"${dhcpd_devices}\"/" /mnt/rpi/etc/default/isc-dhcp-server
 
 echo "===> Configuring NAT and packet marking..."
@@ -114,7 +116,7 @@ echo "net.ipv4.ip_forward=1" >> /mnt/rpi/etc/sysctl.conf
 
 # Generated the iptables rules by adding them on the host and then dumping them into a file on the
 # target.
-/opt/jenny/bin/jenny iptables | /bin/bash
+$JENNY_BIN iptables | /bin/bash
 iptables-save > /mnt/rpi/etc/iptables.ipv4.nat
 
 # Flush all of the host's iptables rules.
@@ -134,7 +136,7 @@ iptables -P FORWARD ACCEPT
 iptables -P OUTPUT ACCEPT
 
 echo "===> Configuring traffic control..."
-/opt/jenny/bin/jenny tc > /mnt/rpi/etc/rc.local
+$JENNY_BIN tc > /mnt/rpi/etc/rc.local
 echo "exit 0" >> /mnt/rpi/etc/rc.local
 
 echo "==> Unmounting image..."
