@@ -8,8 +8,8 @@ RUN apt-get update &&\
   apt-get install --yes nodejs
 
 # Install jenny.
-RUN git clone --quiet https://github.com/pincio/jenny.git /opt/jenny &&\
-  sh -c "cd /opt/jenny && npm install"
+RUN git clone --quiet https://github.com/pincio/jenny.git /opt/pinc/jenny &&\
+  sh -c "cd /opt/pinc/jenny && npm install"
 
 # Install forge.
 RUN mkdir -p /opt/pinc/forge/bin

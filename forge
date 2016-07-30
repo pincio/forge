@@ -2,7 +2,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-JENNY_BIN="/opt/jenny/bin/jenny"
+JENNY_BIN="/opt/pinc/jenny/bin/jenny"
 
 cd "$(dirname "$0")/.."
 
