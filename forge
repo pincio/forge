@@ -136,8 +136,12 @@ iptables -P FORWARD ACCEPT
 iptables -P OUTPUT ACCEPT
 
 echo "===> Configuring traffic control..."
-$JENNY_BIN tc > /mnt/rpi/etc/rc.local
-echo "exit 0" >> /mnt/rpi/etc/rc.local
+mkdir -p /mnt/rpi/opt/pinc/bin
+
+$JENNY_BIN tc > /mnt/rpi/opt/pinc/bin/tc
+chmod +x /mnt/rpi/opt/pinc/bin/tc
+
+echo "up /opt/pinc/bin/tc" >> /mnt/rpi/etc/network/interfaces
 
 echo "==> Unmounting image..."
 umount /mnt/rpi/dev
