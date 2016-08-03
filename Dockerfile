@@ -6,8 +6,9 @@ RUN apt-get update &&\
   curl -sL https://deb.nodesource.com/setup_6.x | bash &&\
   apt-get install --yes nodejs
 
-RUN git clone https://github.com/pincio/jenny.git /opt/pinc/jenny &&\
-  sh -c "cd /opt/pinc/jenny && npm install"
+RUN mkdir -p /opt/pinc/jenny
+COPY jenny /opt/pinc/jenny
+RUN cd /opt/pinc/jenny && npm install
 
 RUN mkdir -p /opt/pinc/forge/bin
 COPY forge /opt/pinc/forge/bin
