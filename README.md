@@ -21,7 +21,7 @@ You can build a Raspbian image by executing the following commands:
 Your thoughts and comments are, of course, always welcome. In descending order of responsiveness,
 you can:
 
-* [PM me on IRC](irc://chat.freenode.net/pinc),
+* [PM me on IRC](http://webchat.freenode.net/?channels=#pinc),
 * [create an issue on GitHub](https://github.com/pincio/forge/issues/new), or
 * [send me an email](mailto:yo@samsmith.io)
 
